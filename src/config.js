@@ -1,6 +1,9 @@
 // Environment configuration with validation
 // This demonstrates proper Railway environment variable handling
 
+// Load .env file for local development (ignored in production)
+require('dotenv').config();
+
 const required = ['DATABASE_URL'];
 const missing = required.filter(key => !process.env[key]);
 
