@@ -488,82 +488,6 @@ railway variables set ENABLE_DEBUG_ENDPOINTS=false
 
 ---
 
-## Testing Checklist
-
-Before an interview, practice these scenarios:
-
-- [ ] Deploy fresh app to Railway
-- [ ] Add PostgreSQL plugin
-- [ ] Verify all environment variables are set
-- [ ] Run seed script (`railway run npm run seed`)
-- [ ] Test health endpoints
-- [ ] Create a ticket via API
-- [ ] Intentionally break port binding and fix
-- [ ] Remove DATABASE_URL and debug
-- [ ] Test slow query endpoint
-- [ ] Crash app and verify auto-restart
-- [ ] Read and understand logs
-- [ ] Explain each debug endpoint's purpose
-
----
-
-## Interview Talking Points
-
-### What This App Demonstrates
-
-1. **Railway Best Practices**
-   - Proper port binding (`process.env.PORT`)
-   - Environment variable validation
-   - Health check endpoints
-   - Graceful shutdown handling
-   - Structured logging for Railway dashboard
-
-2. **Common Customer Issues**
-   - Port configuration (502 errors)
-   - Database connectivity
-   - External API integration
-   - Performance debugging
-   - Crash recovery
-
-3. **Debugging Skills**
-   - Log analysis
-   - Error tracing
-   - Performance profiling
-   - External API troubleshooting
-   - Database query optimization
-
-4. **Support Mindset**
-   - Clear error messages
-   - Helpful logging
-   - Fast health checks
-   - Easy reproducibility
-   - Well-documented issues
-
----
-
-## Next Steps
-
-1. **Deploy and Break Things**
-   - Intentionally create errors
-   - Practice reading logs
-   - Time yourself debugging
-
-2. **Customize Scenarios**
-   - Add your own debug endpoints
-   - Simulate real customer issues
-   - Practice explaining problems
-
-3. **Learn Railway CLI**
-   - Memorize common commands
-   - Practice log filtering
-   - Understand variable management
-
-4. **Study the Code**
-   - Understand each route
-   - Know where to add features
-   - Explain architectural decisions
-
----
 
 ## Resources
 
@@ -571,22 +495,6 @@ Before an interview, practice these scenarios:
 - **Railway CLI**: https://docs.railway.app/develop/cli
 - **Deployment Guide**: https://docs.railway.app/deploy/deployments
 - **Troubleshooting**: https://docs.railway.app/troubleshoot/fixing-common-errors
-
----
-
-## Questions During Interview?
-
-**If asked about this project:**
-- "I built this to practice Railway deployment scenarios"
-- "It covers the most common customer issues: port binding, database connections, environment variables, and performance"
-- "I can demo any debugging scenario in under 2 minutes"
-- "The intentional simplicity lets me focus on Railway fundamentals"
-
-**Be ready to:**
-- Explain any line of code
-- Debug live during the interview
-- Suggest improvements
-- Discuss how you'd support a customer with these issues
 
 ---
 
@@ -598,4 +506,3 @@ MIT - Use this freely for interview prep and learning!
 
 **Built for Railway CSE Interview Prep** 🚂
 
-Good luck! Remember: The best CSEs don't just know how to fix issues—they know how to explain them clearly to customers.
