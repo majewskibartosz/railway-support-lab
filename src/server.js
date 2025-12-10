@@ -9,6 +9,7 @@ const healthRoutes = require('./routes/health');
 const ticketRoutes = require('./routes/tickets');
 const statusRoutes = require('./routes/status');
 const debugRoutes = require('./routes/debug');
+const storageRoutes = require('./routes/storage');
 
 const app = express();
 
@@ -65,6 +66,13 @@ app.get('/', (req, res) => {
         'POST /api/status/notify/:ticketId': 'Send notification webhook',
         'GET /api/status/test/:code': 'Test HTTP status codes',
       },
+      storage: {
+        'GET /api/storage/files': 'List files',
+        'POST /api/storage/files': 'Upload file',
+        'GET /api/storage/files/:key': 'Get file content',
+        'DELETE /api/storage/files/:key': 'Delete file',
+        'GET /api/storage/test-connection': 'Test S3 connection',
+      },
       debug: {
         'GET /debug/slow-query': 'Trigger slow database query',
         'GET /debug/error': 'Throw uncaught exception',
@@ -85,6 +93,7 @@ app.use('/health', healthRoutes);
 app.use('/metrics', healthRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/status', statusRoutes);
+app.use('/api/storage', storageRoutes);
 
 // Debug endpoints (can be disabled via environment variable)
 if (config.enableDebugEndpoints) {
