@@ -9,6 +9,7 @@ As someone interviewing for a CSE role at Railway, you need to demonstrate:
 - Ability to debug common issues customers face
 - Knowledge of logging, monitoring, and troubleshooting
 - Familiarity with environment variables and configuration
+- Experience with Railway's infrastructure (PostgreSQL, S3 Buckets)
 
 This app simulates **realistic support scenarios** without unnecessary complexity.
 
@@ -24,6 +25,11 @@ npm install
 
 # Set up database (PostgreSQL required)
 export DATABASE_URL="postgresql://user:password@localhost:5432/railway_lab"
+
+# Optional: Configure S3 storage (for testing storage endpoints)
+# Copy .env.example to .env and fill in Railway bucket credentials
+cp .env.example .env
+# Edit .env with your Railway bucket credentials from dashboard
 
 # Start the server
 npm start
@@ -44,9 +50,11 @@ The server will start on `http://localhost:3000` (or the port specified by `PORT
 2. Connect Railway to your GitHub account
 3. Create new project → Deploy from GitHub repo
 4. Add PostgreSQL plugin
-5. Railway will automatically:
+5. (Optional) Add S3 Bucket for storage features
+6. Railway will automatically:
    - Set `DATABASE_URL`
    - Set `PORT`
+   - Set `AWS_*` variables (if bucket linked)
    - Build and deploy
 
 **Option B: Deploy with Railway CLI**
@@ -62,6 +70,10 @@ railway init
 
 # Add PostgreSQL
 railway add
+
+# (Optional) Add S3 Bucket for storage features
+# In Railway dashboard: + New → Bucket → Select region
+# Then link bucket to service: Variables → + Add Reference → Select your bucket
 
 # Deploy
 railway up
@@ -83,6 +95,7 @@ railway run npm run seed
 ### Simple by Design
 - **API**: Node.js + Express (single service)
 - **Database**: PostgreSQL (ticket storage)
+- **Object Storage**: Railway S3-compatible buckets (file storage)
 - **External Integration**: httpbin.org (simulates webhooks)
 - **No Redis, no queues, no microservices** - keeps focus on Railway fundamentals
 
@@ -97,6 +110,7 @@ railway-support-lab/
 │       ├── health.js      # Health checks for Railway
 │       ├── tickets.js     # CRUD operations
 │       ├── status.js      # External API integration
+│       ├── storage.js     # S3 bucket operations (NEW)
 │       └── debug.js       # Debugging practice endpoints
 ├── scripts/
 │   ├── seed.js            # Sample data (20 realistic tickets)
@@ -126,6 +140,15 @@ railway-support-lab/
 - `GET /api/status/history` - Recent API call logs
 - `POST /api/status/notify/:id` - Send webhook notification
 - `GET /api/status/test/:code` - Test HTTP status codes
+
+### S3 Storage Operations (Optional - requires Railway Bucket)
+- `GET /api/storage/test-connection` - Test S3 bucket connectivity
+- `GET /api/storage/files` - List all files in bucket
+- `POST /api/storage/files` - Upload file (`{"filename":"test.txt","content":"..."}`)
+- `GET /api/storage/files/:key` - Download/read file content
+- `DELETE /api/storage/files/:key` - Delete file from bucket
+
+**Note:** Storage endpoints return `503 Service Unavailable` if S3 credentials are not configured. App continues to work without S3.
 
 ### Debug Endpoints (Practice Scenarios)
 - `GET /debug/slow-query` - Triggers 5s database query
@@ -324,6 +347,39 @@ Check `Dockerfile:19` - we use exec form `CMD ["node", "src/server.js"]` for pro
 
 ---
 
+### 🔴 Issue 7: S3 Storage Not Working
+
+**Symptoms:**
+- `GET /api/storage/test-connection` returns 503
+- Storage endpoints return "Service Unavailable"
+- Logs show: `[STORAGE] S3 credentials missing`
+
+**Debugging Steps:**
+```bash
+# 1. Check if S3 variables are set
+railway variables | grep AWS
+
+# 2. Verify bucket exists in project
+railway status
+
+# 3. Link bucket to service if not linked
+# Railway Dashboard → Service → Variables → + Add Reference → Select Bucket
+
+# 4. Restart service after linking
+railway restart
+```
+
+**Common Causes:**
+- ❌ Bucket not created in Railway project
+- ❌ Bucket not linked to service (no variable references)
+- ❌ Wrong credentials (old/rotated keys)
+- ❌ Bucket region mismatch with endpoint
+
+**Solution:**
+Check `src/config.js:30-37` - S3 config is optional, app works without it. Verify all `AWS_*` variables are set in Railway dashboard.
+
+---
+
 ## Debugging Practice Scenarios
 
 ### Scenario 1: Port Configuration
@@ -395,6 +451,22 @@ Check `Dockerfile:19` - we use exec form `CMD ["node", "src/server.js"]` for pro
 4. Trace back to `src/routes/debug.js:18`
 
 **Learning:** Structured logging helps debugging
+
+---
+
+### Scenario 7: S3 Storage Integration
+**Challenge:** Practice Railway Bucket setup and debugging
+
+1. Deploy app without S3 bucket
+2. Test `GET /api/storage/test-connection` - should return 503
+3. Add Railway Bucket to project
+4. Link bucket to service (Variables → Add Reference)
+5. Restart and test again - should return success
+6. Upload a file: `POST /api/storage/files`
+7. List files: `GET /api/storage/files`
+8. Download file: `GET /api/storage/files/:key`
+
+**Learning:** Railway's S3-compatible buckets integrate seamlessly, graceful degradation when not configured
 
 ---
 
@@ -480,6 +552,15 @@ railway logs --tail
 - `API_TIMEOUT` - External API timeout in ms (default: 5000)
 - `ENABLE_DEBUG_ENDPOINTS` - Enable/disable debug routes (default: true)
 
+### S3 Storage (Optional - for storage endpoints)
+- `AWS_ACCESS_KEY_ID` - S3 access key (Railway sets when bucket linked)
+- `AWS_SECRET_ACCESS_KEY` - S3 secret key (Railway sets when bucket linked)
+- `AWS_S3_BUCKET_NAME` - Bucket name (Railway sets when bucket linked)
+- `AWS_DEFAULT_REGION` - Bucket region (Railway sets when bucket linked)
+- `AWS_ENDPOINT_URL` - S3 endpoint (default: https://storage.railway.app)
+
+**Note:** Storage features are optional. App works without S3 credentials (returns 503 for storage endpoints).
+
 ### How to Set in Railway
 ```bash
 railway variables set NODE_ENV=production
@@ -504,6 +585,9 @@ Before an interview, practice these scenarios:
 - [ ] Crash app and verify auto-restart
 - [ ] Read and understand logs
 - [ ] Explain each debug endpoint's purpose
+- [ ] (Optional) Add Railway Bucket and test storage endpoints
+- [ ] Upload, list, download, and delete files via S3 API
+- [ ] Verify graceful degradation when S3 not configured
 
 ---
 
@@ -517,10 +601,13 @@ Before an interview, practice these scenarios:
    - Health check endpoints
    - Graceful shutdown handling
    - Structured logging for Railway dashboard
+   - S3-compatible bucket integration (optional feature)
+   - Graceful degradation when services unavailable
 
 2. **Common Customer Issues**
    - Port configuration (502 errors)
    - Database connectivity
+   - S3 bucket setup and linking
    - External API integration
    - Performance debugging
    - Crash recovery
