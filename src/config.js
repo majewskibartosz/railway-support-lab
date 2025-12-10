@@ -44,5 +44,6 @@ console.log(`[CONFIG] Environment: ${config.nodeEnv}`);
 console.log(`[CONFIG] Database: ${config.databaseUrl ? '✓ Configured' : '✗ Missing'}`);
 console.log(`[CONFIG] External API: ${config.externalApiUrl}`);
 console.log(`[CONFIG] Debug endpoints: ${config.enableDebugEndpoints ? 'Enabled' : 'Disabled'}`);
+console.log(`[CONFIG] S3 Storage: ${config.s3.bucketName && config.s3.accessKeyId ? '✓ Configured' : '✗ Not configured (optional)'}`);
 
 module.exports = config;
