@@ -18,6 +18,15 @@ echo "======================================================"
 echo "Testing URL: $URL"
 echo ""
 
+# Check if server is running
+if ! curl -s "$URL/health" > /dev/null; then
+  echo -e "${RED}Error: Could not connect to server at $URL${NC}"
+  echo "Please make sure the server is running:"
+  echo "  npm start"
+  echo ""
+  exit 1
+fi
+
 # Function to test endpoint
 test_endpoint() {
   local method=$1
@@ -37,6 +46,8 @@ test_endpoint() {
     response=$(curl -s -w "\n%{http_code}" -X PATCH "$URL$path" \
       -H "Content-Type: application/json" \
       -d "$data")
+  elif [ "$method" = "DELETE" ]; then
+    response=$(curl -s -w "\n%{http_code}" -X DELETE "$URL$path")
   fi
 
   http_code=$(echo "$response" | tail -n1)
@@ -75,6 +86,15 @@ test_endpoint "GET" "/api/status" "Check external API status"
 test_endpoint "GET" "/api/status/history" "Get API call history"
 test_endpoint "GET" "/api/status/test/200" "Test 200 status code"
 test_endpoint "POST" "/api/status/notify/1" "Send notification" '{"message":"Test notification"}'
+echo ""
+
+# Storage Endpoints
+echo "=== STORAGE ENDPOINTS ==="
+test_endpoint "GET" "/api/storage/test-connection" "Test S3 connection"
+test_endpoint "GET" "/api/storage/files" "List files"
+test_endpoint "POST" "/api/storage/files" "Upload file" '{"filename":"test-script.txt","content":"Hello from test script"}'
+test_endpoint "GET" "/api/storage/files/test-script.txt" "Read file"
+test_endpoint "DELETE" "/api/storage/files/test-script.txt" "Delete file"
 echo ""
 
 # Debug Endpoints (only if enabled)
